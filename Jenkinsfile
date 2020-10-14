@@ -2,6 +2,10 @@
 
 pipeline {
  agent none
+ environment{
+   DOCKER_USER = credentials('docker_hub_user')
+   DOCKER_PASS = credentials('docker_hub_pass')
+ }
 
  stages {
    stage('Unit test frontend') {
@@ -18,9 +22,9 @@ pipeline {
        branch 'main'
      }
      steps {
-         sh "docker build -t YOUR_DOCKERHUB_USER/todo-frontend:${GIT_COMMIT} -f Frontend/Dockerfile 
-    ./Frontend"
-         sh "docker push YOUR_DOCKERHUB_USER/todo-frontend:${GIT_COMMIT}"
+         sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+         sh "docker build -t mariana94/todo-frontend:${GIT_COMMIT} -f Frontend/Dockerfile ./Frontend"
+         sh "docker push mariana94/todo-frontend:${GIT_COMMIT}"
      }
    }
    stage('Unit test backend') {
@@ -36,8 +40,9 @@ pipeline {
        branch 'main'
      }
      steps {
-         sh "docker build -t YOUR_DOCKERHUB_USER/todo-backend:${GIT_COMMIT} -f Backend/Dockerfile ./Backend"
-         sh "docker push YOUR_DOCKERHUB_USER/todo-backend:${GIT_COMMIT}"
+         sh 'docker login -u $DOCKER_USER -p $DOCKER_PASS'
+         sh "docker build -t mariana94/todo-backend:${GIT_COMMIT} -f Backend/Dockerfile ./Backend"
+         sh "docker push mariana94/todo-backend:${GIT_COMMIT}"
      }
    }
    stage('Cleanup tests'){
@@ -53,8 +58,8 @@ pipeline {
        branch 'main'
      }
      steps {
-       sh "docker rmi -f YOUR_DOCKERHUB_USER/todo-frontend:${GIT_COMMIT}"
-       sh "docker rmi -f YOUR_DOCKERHUB_USER/todo-backend:${GIT_COMMIT}"
+       sh "docker rmi -f mariana94/todo-frontend:${GIT_COMMIT}"
+       sh "docker rmi -f mariana94/todo-backend:${GIT_COMMIT}"
      }
    }
  }
